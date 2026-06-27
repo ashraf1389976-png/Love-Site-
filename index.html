@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Site</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Caveat:wght@700&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-pink: #ff758c;
+            --secondary-pink: #ff7eb3;
+            --dark-pink: #de546e;
+            --soft-bg: #fff5f6;
+            --text-color: #4a4a4a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffe9ec 0%, #fff1f3 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* --- شاشة قفل الباسوورد --- */
+        #lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--secondary-pink) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lock-box {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 35px 25px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: heartBeat 2s infinite;
+            max-width: 90%;
+            width: 360px;
+        }
+
+        .lock-box h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+        }
+
+        .lock-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            outline: none;
+            text-align: center;
+            font-size: 18px;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            color: var(--dark-pink);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .lock-box button {
+            background: white;
+            color: var(--dark-pink);
+            border: none;
+            padding: 10px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .lock-box button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .error-msg {
+            color: #fff;
+            background: rgba(222, 84, 110, 0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- المحتوي الرئيسي للموقع --- */
+        #main-content {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease;
+            width: 100%;
+            max-width: 700px;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        /* اسم الموقع فوق */
+        .site-title {
+            font-family: 'Caveat', cursive;
+            font-size: 60px;
+            text-align: center;
+            color: var(--dark-pink);
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* الكروت والرسائل */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(254, 117, 140, 0.08);
+            border: 1px solid rgba(254, 117, 140, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+
+        .card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .letter-card {
+            background: linear-gradient(to top left, #ffffff, #fff9fa);
+            border-right: 6px solid var(--primary-pink);
+        }
+
+        .letter-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #555;
+            text-align: center;
+            white-space: pre-line;
+        }
+
+        h3 {
+            color: var(--dark-pink);
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* قسم التواريخ المهمة */
+        .dates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+        }
+
+        .date-item {
+            background: var(--soft-bg);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px dashed var(--primary-pink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.3s;
+        }
+
+        .date-item:hover {
+            transform: scale(1.03);
+        }
+
+        .date-title {
+            font-weight: bold;
+            color: var(--dark-pink);
+            font-size: 16px;
+        }
+
+        .date-val {
+            font-size: 15px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* معرض الذكريات رفع الصور */
+        .upload-area {
+            text-align: center;
+            border: 2px dashed #ffb3c1;
+            padding: 30px;
+            border-radius: 20px;
+            background: #fff9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-pink);
+            background: #fff0f2;
+        }
+
+        .upload-area p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        /* --- تأثيرات الأنيميشن --- */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.02); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.02); }
+            70% { transform: scale(1); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="lock-box" id="lock-box">
+            <h2>❤️ اكتب الرقم السري للدخول ❤️</h2>
+            <input type="password" id="password-input" placeholder="•••••" inputmode="numeric">
+            <br>
+            <button onclick="checkPassword()">دخول</button>
+            <div class="error-msg" id="error-msg">الرقم السري غير صحيح يا جميل! 🙈</div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        
+        <h1 class="site-title">Love site</h1>
+
+        <div class="card letter-card">
+            <p class="letter-text">
+                اليك يا منه 
+                حبيت اني اوثق كل التفاصيل الحلوه اللي بنا في ويب سايت بسيطه زي دي وان شاء الله هعملهالك مفاجأه وابعتلك الويب سايت دي يوم عيد ميلادك وان شاء الله تفرحك وبحبك♥️
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>📅 تواريخ محفورة في القلب</h3>
+            <div class="dates-grid">
+                <div class="date-item">
+                    <span class="date-title">اول يوم اتكلمنا</span>
+                    <span class="date-val">12 / 6 / 2026</span>
+                </div>
+                <div class="date-item">
+                    <span class="date-title">ارتباطنا</span>
+                    <span class="date-val">22 / 6 / 2026</span>
+                </div>
+                <div class="date-item">
+                    <span class="date-title">عيد ميلاد منه</span>
+                    <span class="date-val">28 / 6 / 2006</span>
+                </div>
+                <div class="date-item">
+                    <span class="date-title">عيد ميلاد اشرف</span>
+                    <span class="date-val">16 / 8 / 2006</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📸 ذكرياتنا الجميلة</h3>
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                <span style="font-size: 40px;">➕</span>
+                <p>اضغط هنا لإضافة صورة جديدة لذكرياتنا</p>
+                <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
+            </div>
+            
+            <div class="gallery" id="gallery-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // دالة التحقق من الباسوورد
+        function checkPassword() {
+            const passwordInput = document.getElementById('password-input').value;
+            const lockScreen = document.getElementById('lock-screen');
+            const mainContent = document.getElementById('main-content');
+            const errorMsg = document.getElementById('error-msg');
+            const lockBox = document.getElementById('lock-box');
+
+            if (passwordInput === "12626") {
+                // إخفاء شاشة القفل بأنيميشن ناعم
+                lockScreen.style.opacity = '0';
+                setTimeout(() => {
+                    lockScreen.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    // تشغيل أنيميشن ظهور محتويات الموقع بالتوالي
+                    setTimeout(() => {
+                        mainContent.style.opacity = '1';
+                        mainContent.style.transform = 'translateY(0)';
+                        animateCards();
+                    }, 50);
+                }, 800);
+                
+                // تحميل الصور المحفوظة مسبقاً
+                loadSavedImages();
+            } else {
+                // إظهار رسالة خطأ وأنيميشن اهتزاز
+                errorMsg.style.display = 'block';
+                lockBox.classList.add('shake');
+                setTimeout(() => { lockBox.classList.remove('shake'); }, 400);
+            }
+        }
+
+        // أنيميشن لظهور الكروت بشكل تدريجي رائع
+        function animateCards() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 300); // فارق زمني بين كل كارد والثاني
+            });
+        }
+
+        // التعامل مع رفع الصور وحفظها في المتصفح (LocalStorage) لتبقي ثابتة
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('image/')) { continue }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    saveImageToStorage(base64Image);
+                    displayImage(base64Image);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // حفظ الصورة في ذاكرة المتصفح
+        function saveImageToStorage(base64Data) {
+            let images = JSON.parse(localStorage.getItem('love_site_photos')) || [];
+            images.push(base64Data);
+            try {
+                localStorage.setItem('love_site_photos', JSON.stringify(images));
+            } catch (error) {
+                alert("مساحة الذاكرة ممتلئة، يرجى تقليل حجم الصور المرفوعة.");
+            }
+        }
+
+        // عرض الصورة داخل الجاليري
+        function displayImage(base64Data) {
+            const container = document.getElementById('gallery-container');
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            
+            const img = document.createElement('img');
+            img.src = base64Data;
+            
+            item.appendChild(img);
+            container.appendChild(item);
+        }
+
+        // تحميل وعرض الصور عند فتح الموقع
+        function loadSavedImages() {
+            let images = JSON.parse(localStorage.getItem('love_site_photos')) || [];
+            images.forEach(imgData => {
+                displayImage(imgData);
+            });
+        }
+    </script>
+</body>
+</html>
